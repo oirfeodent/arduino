@@ -17,7 +17,7 @@ void loop(void) {
     Serial.print("Temperature Found: ");
     Serial.println(temperature);
   } else {
-    Serial.println("Not working");
+    Serial.println("Temperature Sensor not working;");
   }
   delay(2000);
 }
