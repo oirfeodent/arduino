@@ -2,6 +2,23 @@
 #include <OneWire.h>
 
 #define DS3231_I2C_ADDRESS 0x68
+#define DEBUG
+
+#ifdef DEBUG
+  #define DEBUG_PRINT(x)          Serial.print (x)
+  #define DEBUG_PRINTLN(x)        Serial.println (x)
+  #define DEBUG_SERIAL_BEGIN(x)   Serial.begin(x)
+  #define DEBUG_PRINTDEC(x)       Serial.print (x, DEC)
+  #define DEBUG_SLEEPTIMEINSEC()  const int sleepTimeInSec = 1
+#else
+  #define DEBUG_PRINT(x)
+  #define DEBUG_PRINTLN(x)
+  #define DEBUG_SERIAL_BEGIN(x)
+  #define DEBUG_PRINTDEC(x)
+  #define DEBUG_SLEEPTIMEINSEC()  const int sleepTimeInSec = 30
+#endif
+
+DEBUG_SLEEPTIMEINSEC();
 
 //All PINs to know available pins
 OneWire ds(10);  // on pin 10
@@ -15,8 +32,8 @@ const   int     dcLightStartHour      = 8;
 const   int     dcLightStartMins      = 15;
 const   int     dcLightEndHour        = 15;
 const   int     dcLightEndMins        = 45;
-        int     dcLightState          = LOW;
-        int     holdDcLightState      = LOW;
+        boolean dcLightState          = LOW;
+        boolean holdDcLightState      = LOW;
 
 const   int     acLightStartHour      = 8;
 const   int     acLightStartMins      = 1;
@@ -78,10 +95,22 @@ void dcLightOnOff(byte *hour,
   } else {
     dcLightState = LOW;
   }
+  DEBUG_PRINT("Function DC Light ");
+  DEBUG_PRINT(holdDcLightState);
+  DEBUG_PRINT(" ");
+  DEBUG_PRINTLN(dcLightState);
   if (holdDcLightState != dcLightState) {
     digitalWrite(dcLightPin, dcLightState);
     holdDcLightState = dcLightState;
+    DEBUG_PRINT("Write DC Light ");
+    DEBUG_PRINT(holdDcLightState);
+    DEBUG_PRINT(" ");
+    DEBUG_PRINTLN(dcLightState);
   }
+//    if (dcLightState == HIGH) {
+//      dcLightState = LOW;
+//      digitalWrite(dcLightPin, HIGH);
+//    }
 }
 
 void acLightOnOff(byte *hour,
@@ -100,6 +129,8 @@ void acLightOnOff(byte *hour,
   } else {
     acLightState = LOW;
   }
+  DEBUG_PRINT("AC Light ");
+  DEBUG_PRINTLN(dcLightState);
   if (holdAcLightState != acLightState) {
     digitalWrite(acLightPin, acLightState);
     holdAcLightState = acLightState;
@@ -164,6 +195,8 @@ void dcFanOnOffTempBased(){
   } else {
     dcFanState = LOW;
   }
+  DEBUG_PRINT("DC Fan Temp Based ");
+  DEBUG_PRINTLN(dcFanState);
   if (holdDcFanState != dcFanState) {
     digitalWrite(dcFanPin, dcFanState);
     holdDcFanState = dcFanState;
@@ -176,6 +209,8 @@ void dcFanOnOffLightBased(){
   } else {
     dcFanState = LOW;
   }
+  DEBUG_PRINT("DC Fan Light Based ");
+  DEBUG_PRINTLN(dcFanState);
   if (holdDcFanState != dcFanState) {
     digitalWrite(dcFanPin, dcFanState);
     holdDcFanState = dcFanState;
@@ -197,10 +232,12 @@ void checkFloatSwitch() {
       if (floatSwitchState == LOW)
       {
         acMotorState = HIGH;
+        DEBUG_PRINTLN("AC Motor HIGH");
       }  // end if floatSwitchState is LOW
       else
       {
         acMotorState = LOW;
+        DEBUG_PRINTLN("AC Motor LOW");
       }  // end if floatSwitchState is HIGH
       if (holdAcMotorState != acMotorState) {
         digitalWrite(acMotorPin, acMotorState);
@@ -213,13 +250,30 @@ void checkFloatSwitch() {
 void setup() {
   // put your setup code here, to run once:
   Wire.begin();
+  DEBUG_SERIAL_BEGIN(9600);
+  
   pinMode(dcLightPin, OUTPUT);
+  dcLightState = LOW;
+  digitalWrite(dcLightPin, dcLightState);
+  holdDcLightState = dcLightState;
+  DEBUG_PRINT("Setup DC LIGHT ");
+  DEBUG_PRINTLN(dcLightState);
+  
   pinMode(acLightPin, OUTPUT);
+  digitalWrite(acLightPin, acLightState);
+  holdAcLightState = acLightState;
+  
   pinMode(dcFanPin, OUTPUT);
+  digitalWrite(dcFanPin, dcFanState);
+  holdDcFanState = dcFanState;
+  
   pinMode(floatSwitchPin, INPUT_PULLUP);
   floatSwitchState = digitalRead (floatSwitchPin);  //get Value here because of PULL UP Register.
   holdFloatSwitchState =  floatSwitchState;
+  
   pinMode(acMotorPin, OUTPUT);
+  digitalWrite(acMotorPin, acMotorState);
+  holdAcMotorState = acMotorState;
 }
 
 void loop() {
@@ -229,13 +283,24 @@ void loop() {
   
   // retrieve data from DS3231
   readDS3231time(&second, &minute, &hour, &dayOfWeek, &dayOfMonth, &month, &year);
+  
+  DEBUG_PRINT("LOOP DC LIGHT ");
+  DEBUG_PRINTDEC(hour);
+  DEBUG_PRINTDEC(minute);
+  DEBUG_PRINTLN("");
   dcLightOnOff(&hour, &minute);
+  
   acLightOnOff(&hour, &minute);
 
   temperatureFound = getTemperature();
   if (temperatureFound) {
     dcFanOnOffTempBased();
+    DEBUG_PRINTLN(temperature);
   } else {
     dcFanOnOffLightBased();
+  }
+  checkFloatSwitch();
+  if (acMotorState == LOW){
+    delay(sleepTimeInSec * 1000);
   }
 }

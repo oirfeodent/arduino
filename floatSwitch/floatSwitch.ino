@@ -1,3 +1,5 @@
+//http://www.gammon.com.au/forum/?id=11955
+
 const byte floatSwitchPin = 8;
 byte holdFloatSwitchState = HIGH;  // assume floatSwitch open because of pull-up resistor
 byte floatSwitchState = HIGH;

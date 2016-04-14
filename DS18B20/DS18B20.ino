@@ -1,3 +1,6 @@
+//http://www.hobbytronics.co.uk/ds18b20-arduino
+//http://playground.arduino.cc/Learning/OneWire
+
 #include <OneWire.h>
 
 // DS18B20 Temperature chip i/o
