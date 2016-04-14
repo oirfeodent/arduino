@@ -2,7 +2,7 @@
 #include <OneWire.h>
 
 #define DS3231_I2C_ADDRESS 0x68
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
   #define DEBUG_PRINT(x)          Serial.print (x)
@@ -32,25 +32,25 @@ const   int     dcLightStartHour      = 8;
 const   int     dcLightStartMins      = 15;
 const   int     dcLightEndHour        = 15;
 const   int     dcLightEndMins        = 45;
-        boolean dcLightState          = LOW;
-        boolean holdDcLightState      = LOW;
+        int     dcLightState          = HIGH;
+        int     holdDcLightState      = HIGH;
 
 const   int     acLightStartHour      = 8;
 const   int     acLightStartMins      = 1;
 const   int     acLightEndHour        = 15;
 const   int     acLightEndMins        = 59;
-        int     acLightState          = LOW;
-        int     holdAcLightState      = LOW;
+        int     acLightState          = HIGH;
+        int     holdAcLightState      = HIGH;
 
-        int     dcFanState            = LOW;
-        int     holdDcFanState        = LOW;
+        int     dcFanState            = HIGH;
+        int     holdDcFanState        = HIGH;
 const   float   setTemperature        = 28.0;
         float   temperature;
 
-        int     acMotorState          = LOW;
-        int     holdAcMotorState      = LOW;
-        int     holdFloatSwitchState  = HIGH;  // assume floatSwitch open because of pull-up resistor
-        int     floatSwitchState      = HIGH;
+        int     acMotorState          = HIGH;
+        int     holdAcMotorState      = HIGH;
+        int     holdFloatSwitchState  = LOW;  // assume floatSwitch open because of pull-up resistor
+        int     floatSwitchState      = LOW;
 const unsigned long debounceTime = 10;  // milliseconds
       unsigned long floatSwitchPressTime;  // when the floatSwitch last changed state
       
@@ -84,16 +84,16 @@ void dcLightOnOff(byte *hour,
   
   if (*hour >= dcLightStartHour && *hour <= dcLightEndHour) {
     if (*hour == dcLightStartHour && *minute >= dcLightStartMins) {
-      dcLightState = HIGH;
-    } else if (*hour == dcLightEndHour && *minute <= dcLightEndMins) {
-      dcLightState = HIGH;
-    } else if (*hour > dcLightStartHour && *hour < dcLightEndHour ) {
-      dcLightState = HIGH;
-    } else {
       dcLightState = LOW;
+    } else if (*hour == dcLightEndHour && *minute <= dcLightEndMins) {
+      dcLightState = LOW;
+    } else if (*hour > dcLightStartHour && *hour < dcLightEndHour ) {
+      dcLightState = LOW;
+    } else {
+      dcLightState = HIGH;
     }
   } else {
-    dcLightState = LOW;
+    dcLightState = HIGH;
   }
   DEBUG_PRINT("Function DC Light ");
   DEBUG_PRINT(holdDcLightState);
@@ -107,9 +107,9 @@ void dcLightOnOff(byte *hour,
     DEBUG_PRINT(" ");
     DEBUG_PRINTLN(dcLightState);
   }
-//    if (dcLightState == HIGH) {
-//      dcLightState = LOW;
-//      digitalWrite(dcLightPin, HIGH);
+//    if (dcLightState == LOW) {
+//      dcLightState = HIGH;
+//      digitalWrite(dcLightPin, LOW);
 //    }
 }
 
@@ -118,16 +118,16 @@ void acLightOnOff(byte *hour,
   
   if (*hour >= acLightStartHour && *hour <= acLightEndHour) {
     if (*hour == acLightStartHour && *minute >= acLightStartMins) {
-      acLightState = HIGH;
-    } else if (*hour == acLightEndHour && *minute <= acLightEndMins) {
-      acLightState = HIGH;
-    } else if (*hour > acLightStartHour && *hour < acLightEndHour ) {
-      acLightState = HIGH;
-    } else {
       acLightState = LOW;
+    } else if (*hour == acLightEndHour && *minute <= acLightEndMins) {
+      acLightState = LOW;
+    } else if (*hour > acLightStartHour && *hour < acLightEndHour ) {
+      acLightState = LOW;
+    } else {
+      acLightState = HIGH;
     }
   } else {
-    acLightState = LOW;
+    acLightState = HIGH;
   }
   DEBUG_PRINT("AC Light ");
   DEBUG_PRINTLN(dcLightState);
@@ -138,8 +138,8 @@ void acLightOnOff(byte *hour,
 }
 
 boolean getTemperature() {
-  //int HighByte, LowByte, TReading, SignBit, Tc_100, Whole, Fract;
-  int LowByte, HighByte, TReading, SignBit;
+  //int LOWByte, HIGHByte, TReading, SignBit, Tc_100, Whole, Fract;
+  int HIGHByte, LOWByte, TReading, SignBit;
   byte i;
   byte present = 0;
   byte data[12];
@@ -173,9 +173,9 @@ boolean getTemperature() {
   for ( i = 0; i < 9; i++) {           // we need 9 bytes
     data[i] = ds.read();
   }
-  LowByte = data[0];
-  HighByte = data[1];
-  TReading = (HighByte << 8) + LowByte;
+  HIGHByte = data[0];
+  LOWByte = data[1];
+  TReading = (LOWByte << 8) + HIGHByte;
   SignBit = TReading & 0x8000;  // test most sig bit
   if (SignBit) // negative
   {
@@ -191,9 +191,9 @@ boolean getTemperature() {
 
 void dcFanOnOffTempBased(){
   if (temperature > setTemperature) {
-    dcFanState = HIGH;
-  } else {
     dcFanState = LOW;
+  } else {
+    dcFanState = HIGH;
   }
   DEBUG_PRINT("DC Fan Temp Based ");
   DEBUG_PRINTLN(dcFanState);
@@ -204,10 +204,10 @@ void dcFanOnOffTempBased(){
 }
 
 void dcFanOnOffLightBased(){
-  if ((holdDcLightState == HIGH) || (holdAcLightState == HIGH)) {
-    dcFanState = HIGH;
-  } else {
+  if ((holdDcLightState == LOW) || (holdAcLightState == LOW)) {
     dcFanState = LOW;
+  } else {
+    dcFanState = HIGH;
   }
   DEBUG_PRINT("DC Fan Light Based ");
   DEBUG_PRINTLN(dcFanState);
@@ -229,16 +229,16 @@ void checkFloatSwitch() {
     {
       floatSwitchPressTime = millis ();  // when we closed the floatSwitch
       holdFloatSwitchState =  floatSwitchState;  // remember for next time
-      if (floatSwitchState == LOW)
-      {
-        acMotorState = HIGH;
-        DEBUG_PRINTLN("AC Motor HIGH");
-      }  // end if floatSwitchState is LOW
-      else
+      if (floatSwitchState == HIGH)
       {
         acMotorState = LOW;
         DEBUG_PRINTLN("AC Motor LOW");
       }  // end if floatSwitchState is HIGH
+      else
+      {
+        acMotorState = HIGH;
+        DEBUG_PRINTLN("AC Motor HIGH");
+      }  // end if floatSwitchState is LOW
       if (holdAcMotorState != acMotorState) {
         digitalWrite(acMotorPin, acMotorState);
         holdAcMotorState = acMotorState;
@@ -253,7 +253,7 @@ void setup() {
   DEBUG_SERIAL_BEGIN(9600);
   
   pinMode(dcLightPin, OUTPUT);
-  dcLightState = LOW;
+  dcLightState = HIGH;
   digitalWrite(dcLightPin, dcLightState);
   holdDcLightState = dcLightState;
   DEBUG_PRINT("Setup DC LIGHT ");
@@ -300,7 +300,7 @@ void loop() {
     dcFanOnOffLightBased();
   }
   checkFloatSwitch();
-  if (acMotorState == LOW){
+  if (acMotorState == HIGH){
     delay(sleepTimeInSec * 1000);
   }
 }
