@@ -1,5 +1,5 @@
 const byte floatSwitchPin = 8;
-byte oldFloatSwitchState = HIGH;  // assume floatSwitch open because of pull-up resistor
+byte holdFloatSwitchState = HIGH;  // assume floatSwitch open because of pull-up resistor
 byte floatSwitchState = HIGH;
 const unsigned long debounceTime = 10;  // milliseconds
 unsigned long floatSwitchPressTime;  // when the floatSwitch last changed state
@@ -11,7 +11,7 @@ void setup ()
   Serial.begin (9600);
   pinMode (floatSwitchPin, INPUT_PULLUP);
   floatSwitchState = digitalRead (floatSwitchPin);
-  oldFloatSwitchState =  floatSwitchState;
+  holdFloatSwitchState =  floatSwitchState;
 
   Serial.println(floatSwitchState);
   
@@ -28,13 +28,13 @@ void checkFloatSwitch() {
   floatSwitchState = digitalRead (floatSwitchPin);
 
   // has it changed since last time?
-  if (floatSwitchState != oldFloatSwitchState)
+  if (floatSwitchState != holdFloatSwitchState)
   {
     // debounce
     if (millis () - floatSwitchPressTime >= debounceTime)
     {
       floatSwitchPressTime = millis ();  // when we closed the floatSwitch
-      oldFloatSwitchState =  floatSwitchState;  // remember for next time
+      holdFloatSwitchState =  floatSwitchState;  // remember for next time
       if (floatSwitchState == LOW)
       {
         timesChanged++;
