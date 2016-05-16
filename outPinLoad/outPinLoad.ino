@@ -15,7 +15,7 @@
   #define DEBUG_PRINTLN(x)
   #define DEBUG_SERIAL_BEGIN(x)
   #define DEBUG_PRINTDEC(x)
-  #define DEBUG_SLEEPTIMEINSEC()  const int sleepTimeInSec = 30
+  #define DEBUG_SLEEPTIMEINSEC()  const int sleepTimeInSec = 60
 #endif
 
 DEBUG_SLEEPTIMEINSEC();
@@ -30,14 +30,14 @@ const   int     floatSwitchPin        = 8;
 
 const   int     dcLightStartHour      = 8;
 const   int     dcLightStartMins      = 15;
-const   int     dcLightEndHour        = 15;
+const   int     dcLightEndHour        = 14;
 const   int     dcLightEndMins        = 45;
         int     dcLightState          = HIGH;
         int     holdDcLightState      = HIGH;
 
 const   int     acLightStartHour      = 8;
 const   int     acLightStartMins      = 1;
-const   int     acLightEndHour        = 15;
+const   int     acLightEndHour        = 14;
 const   int     acLightEndMins        = 59;
         int     acLightState          = HIGH;
         int     holdAcLightState      = HIGH;
@@ -49,8 +49,8 @@ const   float   setTemperature        = 28.0;
 
         int     acMotorState          = HIGH;
         int     holdAcMotorState      = HIGH;
-        int     holdFloatSwitchState  = LOW;  // assume floatSwitch open because of pull-up resistor
-        int     floatSwitchState      = LOW;
+        int     holdFloatSwitchState  = HIGH;  // assume floatSwitch open because of pull-up resistor
+        int     floatSwitchState      = HIGH;
 const unsigned long debounceTime = 10;  // milliseconds
       unsigned long floatSwitchPressTime;  // when the floatSwitch last changed state
       
@@ -300,7 +300,7 @@ void loop() {
     dcFanOnOffLightBased();
   }
   checkFloatSwitch();
-  if (acMotorState == HIGH){
+  //if (acMotorState == HIGH){
     delay(sleepTimeInSec * 1000);
-  }
+  //}
 }
