@@ -11,14 +11,7 @@ byte bcdToDec(byte val)
 {
   return( (val/16*10) + (val%16) );
 }
-void setup()
-{
-  Wire.begin();
-  Serial.begin(9600);
-  // set the initial time here:
-  // DS3231 seconds, minutes, hours, day, date, month, year
-   //setDS3231time(59,1,8,6,2,5,15);
-}
+
 void setDS3231time(byte second, byte minute, byte hour, byte dayOfWeek, byte
 dayOfMonth, byte month, byte year)
 {
@@ -34,6 +27,16 @@ dayOfMonth, byte month, byte year)
   Wire.write(decToBcd(year)); // set year (0 to 99)
   Wire.endTransmission();
 }
+
+void setup()
+{
+  Wire.begin();
+  Serial.begin(9600);
+  // set the initial time here:
+  // DS3231 seconds, minutes, hours, day, date, month, year
+//  setDS3231time(00,13,3,1,24,7,16);
+}
+
 void readDS3231time(byte *second,
 byte *minute,
 byte *hour,
